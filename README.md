@@ -31,9 +31,6 @@ Cashela no es solo una base de datos, es una herramienta de ingeniería pensada 
 - **Gestión de Precios:** Sistema avanzado para manejar costos de manufactura, impuestos y márgenes de ganancia.
 - **Infraestructura Cloud-Ready:** Optimizado para despliegues en entornos como Webempresa o servicios de contenedores.
 
-## Desarrollo con IA (Agentic Development)
-
-La estructura predecible de Cashela y sus estrictas convenciones de código la hacen ideal para trabajar con agentes de codificación como **Cursor**, **Claude** o **GitHub Copilot**. Para maximizar la productividad en este proyecto, asegúrate de mantener actualizados los modelos de Eloquent y los Resource de respuesta.
 
 ## Guía de Instalación Rápida
 
@@ -41,7 +38,8 @@ Si ya tienes Docker instalado, el despliegue es inmediato:
 
 ```bash
 # Levantar el entorno
-docker compose up -d
+docker-compose up -d --build
+docker logs -f cashela_app
 
 # Instalar dependencias
 docker exec -it cashela_app composer install
