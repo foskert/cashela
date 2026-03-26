@@ -1,0 +1,65 @@
+services:
+  # App con Swagger
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cashela_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - mysql
+      - rabbitmq
+    networks:
+      - cashela_network
+
+  # Worker para procesar la auditoría
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cashela_worker
+    command: php artisan queue:work rabbitmq
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - app
+      - rabbitmq
+    networks:
+      - cashela_network
+
+  # PostgreSQL
+  mysql:
+    image: mysql:9.0
+    container_name: cashela_mysql
+    environment:
+      MYSQL_DATABASE: cashela
+      MYSQL_ROOT_PASSWORD: cashela23414411
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    networks:
+      - cashela_network
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: cashela_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - cashela_network
+
+networks:
+  cashela_network:
+    driver: bridge
+
+volumes:
+  mysqldata:

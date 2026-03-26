@@ -1,0 +1,871 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Cashela API",
+        "description": "API para el sistema de conversiones y auditoría de Cashela",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Servidor Local Docker"
+        }
+    ],
+    "paths": {
+        "/api/v1/audits/transactions/{id}": {
+            "get": {
+                "tags": [
+                    "Auditoría"
+                ],
+                "summary": "Consultar historial de auditoría de una transacción",
+                "description": "Obtiene el registro detallado de todos los cambios realizados sobre una transacción específica (creación, cambios de estado, etc).",
+                "operationId": "501fdd5c51b4c55648db23f2878ea3f9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de la transacción a auditar",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "019d2b07-0246-7009-a520-38f5f22cb088"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Historial de cambios recuperado con éxito",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Auditoría de transacción consultada con éxito."
+                                        },
+                                        "value": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/AuditResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transacción no encontrada"
+                    },
+                    "500": {
+                        "description": "Error interno del servidor"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/currencies/check": {
+            "get": {
+                "tags": [
+                    "Monedas"
+                ],
+                "summary": "Cotizar conversión de moneda",
+                "description": "Calcula el monto de destino y la tasa de cambio actual sin crear una transacción.",
+                "operationId": "6713cf2977509d5434a63d0411c850df",
+                "parameters": [
+                    {
+                        "name": "from_currency_id",
+                        "in": "query",
+                        "description": "ID de la moneda de origen",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "to_currency_id",
+                        "in": "query",
+                        "description": "ID de la moneda de destino",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2
+                        }
+                    },
+                    {
+                        "name": "amount",
+                        "in": "query",
+                        "description": "Monto a convertir",
+                        "required": true,
+                        "schema": {
+                            "type": "number",
+                            "format": "float",
+                            "example": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cotización calculada con éxito",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cotización realizada con éxito."
+                                        },
+                                        "value": {
+                                            "properties": {
+                                                "amount": {
+                                                    "type": "number",
+                                                    "example": 100
+                                                },
+                                                "rate": {
+                                                    "type": "number",
+                                                    "example": 45.15
+                                                },
+                                                "result": {
+                                                    "type": "number",
+                                                    "example": 4515
+                                                },
+                                                "from": {
+                                                    "type": "string",
+                                                    "example": "USD"
+                                                },
+                                                "to": {
+                                                    "type": "string",
+                                                    "example": "VES"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación (Parámetros faltantes o monedas inválidas)"
+                    },
+                    "500": {
+                        "description": "Error al conectar con el servicio de tasas"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/currencies": {
+            "get": {
+                "tags": [
+                    "Monedas"
+                ],
+                "summary": "Listado de monedas activas",
+                "description": "Retorna el listado de todas las divisas habilitadas para operaciones en Cashela.",
+                "operationId": "a47ee12304bc815ec6bc919b40c56e5a",
+                "responses": {
+                    "200": {
+                        "description": "Listado de monedas recuperado con éxito",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Monedas listadas con éxito."
+                                        },
+                                        "value": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Dólar Estadounidense"
+                                                    },
+                                                    "code": {
+                                                        "type": "string",
+                                                        "example": "USD"
+                                                    },
+                                                    "symbol": {
+                                                        "type": "string",
+                                                        "example": "$"
+                                                    },
+                                                    "exchange_rate": {
+                                                        "type": "string",
+                                                        "example": "1.00"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado"
+                    },
+                    "500": {
+                        "description": "Error interno del servidor"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transactions": {
+            "get": {
+                "tags": [
+                    "Transacciones"
+                ],
+                "summary": "Listado paginado de transacciones con filtros",
+                "operationId": "4af83bb51060eb4b2981f4ea3659cb82",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por código de referencia (TX-...)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "paginate",
+                        "in": "query",
+                        "description": "Resultados por página",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Campo de ordenación",
+                        "schema": {
+                            "type": "string",
+                            "default": "created_at",
+                            "enum": [
+                                "id",
+                                "reference_code",
+                                "status",
+                                "created_at"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "order_by",
+                        "in": "query",
+                        "description": "Dirección de orden (asc/desc)",
+                        "schema": {
+                            "type": "string",
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado de transacciones recuperado con éxito",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transacciones listadas con éxito."
+                                        },
+                                        "value": {
+                                            "$ref": "#/components/schemas/TransactionListResponse"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado - Token inválido o ausente"
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error al listar las transacciones."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "example": "Mensaje de error técnico"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Transacciones"
+                ],
+                "summary": "Crear una nueva transacción (Conversión de divisas)",
+                "operationId": "38b222e59d182bdaff8f8accd773c2c6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "amount",
+                                    "from_currency_id",
+                                    "to_currency_id"
+                                ],
+                                "properties": {
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "minimum": 0.01,
+                                        "example": 100
+                                    },
+                                    "from_currency_id": {
+                                        "description": "ID de la moneda de origen",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "to_currency_id": {
+                                        "description": "ID de la moneda de destino",
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Envío de remesa familiar",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Transacción creada y pendiente de aprobación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transacción registrada con éxito."
+                                        },
+                                        "value": {
+                                            "$ref": "#/components/schemas/TransactionResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación - Fondos insuficientes o IDs de moneda inválidos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error al procesar la conversión."
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "example": "Servicio de tasa de cambio no disponible"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transactions/{id}": {
+            "get": {
+                "tags": [
+                    "Transacciones"
+                ],
+                "summary": "Obtener detalles de una transacción",
+                "operationId": "85fb51eea363cbb093576a4a2c50b109",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de la transacción a consultar",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "019d2b07-0246-7009-a520-38f5f22cb088"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles de la transacción recuperados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transacción consultada correctamente."
+                                        },
+                                        "value": {
+                                            "$ref": "#/components/schemas/TransactionResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transacción no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "La transacción solicitada no existe."
+                                        },
+                                        "value": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Transacciones"
+                ],
+                "summary": "Actualizar estado de una transacción (Evaluación)",
+                "operationId": "e472b9a8e91b540b8217e7ac3c8260a5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de la transacción a actualizar",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "019d2b07-0246-7009-a520-38f5f22cb088"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "description": "Nuevo estado de la transacción",
+                                        "type": "string",
+                                        "enum": [
+                                            "completed",
+                                            "failed"
+                                        ],
+                                        "example": "completed"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Comprobante de transferencia verificado.",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transacción actualizada con éxito",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transacción actualizada correctamente."
+                                        },
+                                        "value": {
+                                            "$ref": "#/components/schemas/TransactionResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transacción no encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "La transacción no existe."
+                                        },
+                                        "value": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Datos de validación inválidos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/login": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Inicio de sesión de usuario",
+                "description": "Retorna el token Bearer para autenticación",
+                "operationId": "0a3bf87b83ee15b9e8c698e7ae8f2099",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@admin.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "1234567890"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Login exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Autenticación exitosa"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "1|3v9M..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Admin"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "admin@cashela.com"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Credenciales inválidas"
+                    },
+                    "500": {
+                        "description": "Error interno"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ValidationErrorResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "The status field is required."
+                    },
+                    "errors": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "AuditResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "event": {
+                        "type": "string",
+                        "example": "created"
+                    },
+                    "auditable_type": {
+                        "type": "string",
+                        "example": "App\\Models\\Transaction"
+                    },
+                    "old_values": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "new_values": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TransactionListResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "source_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 100
+                    },
+                    "target_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 3600
+                    },
+                    "exchange_rate": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 36
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "CurrencyResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "United States Dollar"
+                    },
+                    "symbol": {
+                        "type": "string",
+                        "example": "$"
+                    }
+                },
+                "type": "object"
+            },
+            "TransactionResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "source_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 100
+                    },
+                    "target_amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 36.5
+                    },
+                    "exchange_rate": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0.365
+                    },
+                    "source_currency": {
+                        "$ref": "#/components/schemas/CurrencyResource"
+                    },
+                    "target_currency": {
+                        "$ref": "#/components/schemas/CurrencyResource"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Ingresa solo el token (ej: 4|lGMHH...) y Swagger añadirá \"Bearer \" por ti."
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auditoría",
+            "description": "Auditoría"
+        },
+        {
+            "name": "Monedas",
+            "description": "Monedas"
+        },
+        {
+            "name": "Transacciones",
+            "description": "Transacciones"
+        },
+        {
+            "name": "Autenticación",
+            "description": "Autenticación"
+        }
+    ]
+}
